@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thử Thách Hóa Học: Khám Phá Lipid</title>
+    <!-- React & React DOM -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            min-height: 100vh;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .glow-button {
+            transition: all 0.3s ease;
+        }
+        .glow-button:hover {
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="text-white flex items-center justify-center p-4">
+
+    <div id="root" class="w-full max-w-4xl"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        const QUIZ_DATA = [
+            {
+                id: 1,
+                question: "Lipid là những hợp chất hữu cơ có đặc tính chung nổi bật nào sau đây?",
+                options: [
+                    "Tan tốt trong nước, không tan trong dung môi hữu cơ",
+                    "Không tan trong nước, tan tốt trong dung môi hữu cơ không phân cực",
+                    "Tan vô hạn trong mọi loại dung môi",
+                    "Chỉ tan trong dung dịch axit đậm đặc"
+                ],
+                correct: 1,
+                explanation: "Lipid là hợp chất hữu cơ kỵ nước, không tan trong nước nhưng tan tốt trong các dung môi hữu cơ không phân cực như ete, chloroform, xylen..."
+            },
+            {
+                id: 2,
+                question: "Triglixerit (chất béo) là trieste của glixerol với chất nào dưới đây?",
+                options: [
+                    "Các axit vô cơ mạnh",
+                    "Các axit xitric",
+                    "Các axit béo",
+                    "Các ancol đơn chức"
+                ],
+                correct: 2,
+                explanation: "Chất béo (triglixerit) là trieste của glixerol và các axit béo (axit hiđrocacbon đơn chức có mạch cacbon dài, không phân nhánh)."
+            },
+            {
+                id: 3,
+                question: "Công thức cấu tạo nào sau đây là của Axit Stearic?",
+                options: [
+                    "C17H35COOH",
+                    "C17H33COOH",
+                    "C15H31COOH",
+                    "C17H31COOH"
+                ],
+                correct: 0,
+                explanation: "Axit stearic có công thức là C17H35COOH (axit no). C17H33COOH là axit oleic, C15H31COOH là axit palmitic."
+            },
+            {
+                id: 4,
+                question: "Phản ứng xà phòng hóa chất béo trong dung dịch NaOH đun nóng tạo ra sản phẩm nào?",
+                options: [
+                    "Glixerol và Axit béo tự do",
+                    "Glixerol và Muối của axit béo (Xà phòng)",
+                    "Ancol etylic và Muối natri",
+                    "Chỉ thu được Glixerol tinh khiết"
+                ],
+                correct: 1,
+                explanation: "Thủy phân chất béo trong môi trường kiềm (NaOH/KOH) thu được glixerol và hỗn hợp muối natri/kali của các axit béo, hỗn hợp muối này chính là xà phòng."
+            },
+            {
+                id: 5,
+                question: "Vì sao mỡ động vật thường ở trạng thái rắn, còn dầu thực vật thường ở trạng thái lỏng ở nhiệt độ phòng?",
+                options: [
+                    "Mỡ động vật chứa nhiều gốc axit béo không no, dầu thực vật chứa gốc no",
+                    "Mỡ động vật chứa nhiều gốc axit béo no, dầu thực vật chứa gốc không no",
+                    "Dầu thực vật có khối lượng phân tử lớn hơn mỡ động vật",
+                    "Mỡ động vật chứa nhiều nước hơn dầu thực vật"
+                ],
+                correct: 1,
+                explanation: "Chất béo chứa chủ yếu gốc axit béo no có nhiệt độ nóng chảy cao nên ở trạng thái rắn (mỡ). Chất béo chứa chủ yếu gốc không no có nhiệt độ nóng chảy thấp hơn nên ở dạng lỏng (dầu)."
+            },
+            {
+                id: 6,
+                question: "Để biến dầu ăn (chất béo lỏng) thành bơ nhân tạo (chất béo rắn), người ta thường dùng phản ứng nào?",
+                options: [
+                    "Phản ứng Xà phòng hóa",
+                    "Phản ứng Hiđro hóa (cộng H2 với tác nhân Ni, t°)",
+                    "Phản ứng Oxi hóa không hoàn toàn",
+                    "Phản ứng Trùng hợp"
+                ],
+                correct: 1,
+                explanation: "Hiđro hóa chất béo lỏng (gốc không no) thành chất béo rắn (gốc no) bằng H2 (xúc tác Ni, đun nóng và áp suất) để sản xuất bơ nhân tạo và margarin."
+            },
+            {
+                id: 7,
+                question: "Hiện tượng dầu mỡ để lâu ngày trong không khí bị 'ôi' là do nguyên nhân chính nào?",
+                options: [
+                    "Do sự bốc hơi của Glixerol",
+                    "Gốc axit béo không no bị oxi hóa chậm bởi O2 tạo thành peroxit rồi phân hủy thành anđehit hôi",
+                    "Chất béo hấp thụ độ ẩm tạo thành axit béo tự do có mùi hôi",
+                    "Do các vi khuẩn ăn hết lipit"
+                ],
+                correct: 1,
+                explanation: "Liên kết đôi C=C trong gốc axit béo không no bị oxi hóa chậm bởi oxi không khí tạo peroxit, chất này phân hủy thành các anđehit có mùi chua hôi thối đặc trưng."
+            },
+            {
+                id: 8,
+                question: "Lipid phức tạp cấu tạo nên màng tế bào của sinh vật có tên gọi là gì?",
+                options: [
+                    "Triglixerit",
+                    "Steroid",
+                    "Phospholipid",
+                    "Sáp (Wax)"
+                ],
+                correct: 2,
+                explanation: "Phospholipid là thành phần chính cấu tạo nên lớp màng kép của tế bào sinh học nhờ có cấu trúc một đầu ưa nước và hai đuôi kỵ nước."
+            }
+        ];
+
+        function App() {
+            const [gameState, setGameState] = useState('start'); // start, playing, result
+            const [currentQuestion, setCurrentQuestion] = useState(0);
+            const [score, setScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [isAnswered, setIsAnswered] = useState(false);
+            const [streak, setStreak] = useState(0);
+            const [maxStreak, setMaxStreak] = useState(0);
+            const [timer, setTimer] = useState(20);
+
+            useEffect(() => {
+                let interval;
+                if (gameState === 'playing' && !isAnswered && timer > 0) {
+                    interval = setInterval(() => {
+                        setTimer((prev) => prev - 1);
+                    }, 1000);
+                } else if (timer === 0 && !isAnswered) {
+                    handleAnswer(-1); // Hết giờ xem như chọn sai
+                }
+                return () => clearInterval(interval);
+            }, [gameState, timer, isAnswered]);
+
+            const startGame = () => {
+                setGameState('playing');
+                setCurrentQuestion(0);
+                setScore(0);
+                setStreak(0);
+                setMaxStreak(0);
+                resetQuestionState();
+            };
+
+            const resetQuestionState = () => {
+                setSelectedAnswer(null);
+                setIsAnswered(false);
+                setTimer(20);
+            };
+
+            const handleAnswer = (index) => {
+                if (isAnswered) return;
+
+                setSelectedAnswer(index);
+                setIsAnswered(true);
+
+                const q = QUIZ_DATA[currentQuestion];
+                if (index === q.correct) {
+                    const timeBonus = timer * 10;
+                    const streakBonus = streak * 50;
+                    const pointsGained = 100 + timeBonus + streakBonus;
+                    
+                    setScore((prev) => prev + pointsGained);
+                    setStreak((prev) => {
+                        const newStreak = prev + 1;
+                        if (newStreak > maxStreak) setMaxStreak(newStreak);
+                        return newStreak;
+                    });
+                } else {
+                    setStreak(0);
+                }
+            };
+
+            const handleNextQuestion = () => {
+                if (currentQuestion < QUIZ_DATA.length - 1) {
+                    setCurrentQuestion((prev) => prev + 1);
+                    resetQuestionState();
+                } else {
+                    setGameState('result');
+                }
+            };
+
+            const getRank = () => {
+                const percentage = (score / (QUIZ_DATA.length * 300)) * 100;
+                if (percentage >= 80) return { title: "Nhà Hóa Học Thiên Tài 🧪✨", color: "text-amber-400" };
+                if (percentage >= 50) return { title: "Chuyên Gia Lipid 🔬", color: "text-emerald-400" };
+                return { title: "Thực Tập Sinh Hóa Học 📚", color: "text-blue-400" };
+            };
+
+            return (
+                <div className="w-full">
+                    {/* Screen 1: Start Screen */}
+                    {gameState === 'start' && (
+                        <div className="glass-panel p-8 md:p-12 rounded-3xl text-center space-y-6 shadow-2xl">
+                            <div className="inline-block p-4 bg-purple-500/20 rounded-full border border-purple-500/30 mb-2">
+                                <span className="text-5xl">🧪</span>
+                            </div>
+                            <h1 className="text-4xl md:text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-400 via-purple-300 to-indigo-400">
+                                Thử Thách Hóa Học: LIPID
+                            </h1>
+                            <p className="text-gray-300 max-w-xl mx-auto text-lg leading-relaxed">
+                                Khám phá thế giới chất béo, triglixerit, axit béo và phospholipid qua 8 câu hỏi tương tác kịch tính!
+                            </p>
+                            <div className="flex justify-center gap-6 py-4 text-sm text-purple-200">
+                                <div className="flex items-center gap-2">
+                                    <span>⏱️ 20 giây/câu</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <span>🔥 Thưởng Chuỗi Đúng</span>
+                                </div>
+                            </div>
+                            <button
+                                onClick={startGame}
+                                className="glow-button px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl font-bold text-xl hover:from-purple-500 hover:to-pink-500 transition cursor-pointer shadow-lg"
+                            >
+                                Bắt Đầu Trải Nghiệm 🚀
+                            </button>
+                        </div>
+                    )}
+
+                    {/* Screen 2: Playing Screen */}
+                    {gameState === 'playing' && (
+                        <div className="glass-panel p-6 md:p-8 rounded-3xl shadow-2xl relative overflow-hidden">
+                            {/* Header Stats */}
+                            <div className="flex justify-between items-center pb-6 mb-6 border-b border-white/10">
+                                <div>
+                                    <span className="text-xs text-purple-300 uppercase tracking-widest font-semibold">Câu hỏi</span>
+                                    <div className="text-2xl font-bold">{currentQuestion + 1} / {QUIZ_DATA.length}</div>
+                                </div>
+                                <div className="text-center">
+                                    <span className="text-xs text-amber-300 uppercase tracking-widest font-semibold">Chuỗi đúng</span>
+                                    <div className="text-xl font-bold text-amber-400">🔥 x{streak}</div>
+                                </div>
+                                <div className="text-right">
+                                    <span className="text-xs text-emerald-300 uppercase tracking-widest font-semibold">Điểm số</span>
+                                    <div className="text-2xl font-bold text-emerald-400">{score}</div>
+                                </div>
+                            </div>
+
+                            {/* Timer Bar */}
+                            <div className="w-full bg-gray-700/50 rounded-full h-2 mb-8 overflow-hidden">
+                                <div 
+                                    className={`h-full transition-all duration-1000 ${
+                                        timer > 10 ? 'bg-emerald-400' : timer > 5 ? 'bg-amber-400' : 'bg-red-500 animate-pulse'
+                                    }`}
+                                    style={{ width: `${(timer / 20) * 100}%` }}
+                                ></div>
+                            </div>
+
+                            {/* Question Title */}
+                            <h2 className="text-xl md:text-2xl font-semibold mb-6 text-purple-100 min-h-[60px]">
+                                {QUIZ_DATA[currentQuestion].question}
+                            </h2>
+
+                            {/* Options */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                                {QUIZ_DATA[currentQuestion].options.map((option, index) => {
+                                    let btnStyle = "bg-white/5 border-white/10 hover:bg-white/10";
+                                    if (isAnswered) {
+                                        if (index === QUIZ_DATA[currentQuestion].correct) {
+                                            btnStyle = "bg-emerald-600/80 border-emerald-400 text-white shadow-lg shadow-emerald-900/50";
+                                        } else if (index === selectedAnswer) {
+                                            btnStyle = "bg-red-600/80 border-red-400 text-white shadow-lg shadow-red-900/50";
+                                        } else {
+                                            btnStyle = "bg-white/5 border-white/5 opacity-50";
+                                        }
+                                    }
+
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleAnswer(index)}
+                                            disabled={isAnswered}
+                                            className={`p-4 rounded-xl border text-left transition duration-200 flex items-start gap-3 text-base ${btnStyle}`}
+                                        >
+                                            <span className="inline-flex justify-center items-center w-7 h-7 rounded-lg bg-white/10 text-xs font-bold shrink-0">
+                                                {String.fromCharCode(65 + index)}
+                                            </span>
+                                            <span className="pt-0.5">{option}</span>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {/* Explanation / Feedback */}
+                            {isAnswered && (
+                                <div className="mt-6 p-4 rounded-2xl bg-indigo-950/60 border border-indigo-500/30 text-indigo-100 space-y-2 animate-fade-in">
+                                    <div className="flex items-center gap-2 font-bold text-amber-300">
+                                        💡 Giải thích chi tiết:
+                                    </div>
+                                    <p className="text-sm leading-relaxed">{QUIZ_DATA[currentQuestion].explanation}</p>
+                                    <div className="flex justify-end pt-2">
+                                        <button
+                                            onClick={handleNextQuestion}
+                                            className="glow-button px-6 py-2 bg-purple-600 rounded-xl font-bold text-sm hover:bg-purple-500 transition"
+                                        >
+                                            {currentQuestion < QUIZ_DATA.length - 1 ? 'Câu Tiếp Theo ➔' : 'Xem Kết Quả 🏆'}
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Screen 3: Result Screen */}
+                    {gameState === 'result' && (
+                        <div className="glass-panel p-8 md:p-12 rounded-3xl text-center space-y-6 shadow-2xl">
+                            <div className="text-6xl mb-2">🏆</div>
+                            <h2 className="text-3xl font-bold text-white">Hoàn Thành Thử Thách!</h2>
+                            
+                            <div className={`text-2xl font-bold ${getRank().color}`}>
+                                Danh hiệu: {getRank().title}
+                            </div>
+
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-6">
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                                    <span className="text-xs text-gray-400 uppercase">Tổng điểm</span>
+                                    <div className="text-3xl font-bold text-emerald-400 mt-1">{score}</div>
+                                </div>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10">
+                                    <span className="text-xs text-gray-400 uppercase">Chuỗi đúng dài nhất</span>
+                                    <div className="text-3xl font-bold text-amber-400 mt-1">🔥 {maxStreak}</div>
+                                </div>
+                                <div className="p-4 bg-white/5 rounded-2xl border border-white/10 col-span-2 md:col-span-1">
+                                    <span className="text-xs text-gray-400 uppercase">Số câu trả lời</span>
+                                    <div className="text-3xl font-bold text-purple-400 mt-1">{QUIZ_DATA.length}</div>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={startGame}
+                                className="glow-button px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl font-bold text-lg hover:from-purple-500 hover:to-pink-500 transition"
+                            >
+                                Chơi Lại Game 🔄
+                            </button>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    </script>
+</body>
+</html>
+```eof
+
+### Tính năng chính của Game Hóa Học Lipid:
+1. **Giao diện hiện đại**: Sử dụng Tailwind CSS kết hợp hiệu ứng Glassmorphism giúp trải nghiệm trực quan và mượt mà.
+2. **Cơ chế tính điểm linh hoạt**: Điểm cộng thưởng theo tốc độ trả lời (thời gian còn lại) và chuỗi câu trả lời đúng liên tiếp (Streak).
+3. **Phản hồi ngay lập tức**: Hiển thị rõ đáp án đúng/sai cùng lời giải thích hóa học chi tiết giúp người chơi tiếp thu kiến thức hiệu quả.
+4. **Hệ thống danh hiệu**: Đánh giá trình độ người chơi dựa trên tổng điểm đạt được cuối lượt chơi.
