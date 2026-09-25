@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lipid Showdown - Gameshow Hóa học</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#101827,#172554);color:#f8fafc;min-height:100vh}
+.wrap{max-width:900px;margin:auto;padding:24px 16px 50px}
+.card{background:rgba(15,23,42,.92);border:1px solid #334155;border-radius:22px;padding:22px;box-shadow:0 15px 45px rgba(0,0,0,.25)}
+header{text-align:center;margin-bottom:18px}
+.badge{display:inline-block;padding:7px 12px;border-radius:999px;background:#1e293b;color:#93c5fd;font-weight:700;font-size:13px}
+h1{font-size:clamp(32px,7vw,58px);margin:12px 0 6px}
+.sub{color:#cbd5e1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:18px 0}
+.stat{background:#1e293b;border-radius:15px;padding:14px;text-align:center}
+.stat b{display:block;font-size:25px;margin-top:4px}
+.progress{height:10px;background:#334155;border-radius:99px;overflow:hidden;margin:12px 0 20px}
+.progress i{display:block;height:100%;background:#60a5fa;width:0;transition:.3s}
+.question{font-size:22px;line-height:1.35;margin:8px 0 18px}
+.answers{display:grid;gap:11px}
+button{font:inherit}
+.answer,.primary,.secondary{border:0;border-radius:14px;padding:14px 16px;cursor:pointer;transition:.15s}
+.answer{text-align:left;background:#1e293b;color:#f8fafc;border:1px solid #475569}
+.answer:hover:not(:disabled){transform:translateY(-1px);border-color:#60a5fa;background:#263449}
+.answer:disabled{cursor:default}
+.correct{background:#14532d!important;border-color:#4ade80!important}
+.wrong{background:#7f1d1d!important;border-color:#f87171!important}
+.primary{background:#60a5fa;color:#082f49;font-weight:800}
+.secondary{background:#334155;color:#fff}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:18px}
+.feedback{min-height:28px;margin-top:15px;font-weight:700}
+.timer{font-weight:800}
+.hidden{display:none!important}
+.start{text-align:center}
+.start ul{text-align:left;max-width:600px;margin:20px auto;line-height:1.8;color:#cbd5e1}
+.result{text-align:center}
+.result .big{font-size:60px}
+table{width:100%;border-collapse:collapse;margin-top:18px}
+td,th{padding:10px;border-bottom:1px solid #334155;text-align:left}
+.small{font-size:13px;color:#94a3b8}
+@media(max-width:560px){.stats{grid-template-columns:1fr}.question{font-size:19px}.wrap{padding:14px 10px 30px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <span class="badge">GAMESHOW HÓA HỌC</span>
+  <h1>🧪 LIPID SHOWDOWN</h1>
+  <div class="sub">Thử thách kiến thức về Lipid • Chơi trực tiếp trên trình duyệt</div>
+</header>
+
+<section id="start" class="card start">
+  <h2>🎯 Sẵn sàng chưa?</h2>
+  <p>Trả lời nhanh và chính xác để trở thành “Nhà vô địch Lipid”.</p>
+  <ul>
+    <li>10 câu hỏi, mỗi câu tối đa 20 giây.</li>
+    <li>Đúng: <b>+10 điểm</b>. Sai hoặc hết giờ: 0 điểm.</li>
+    <li>Nội dung: triglyceride, acid béo, phospholipid, cholesterol và xà phòng hóa.</li>
+    <li>Có thể chơi lại để phá kỷ lục.</li>
+  </ul>
+  <button id="startBtn" class="primary">🚀 Bắt đầu chơi</button>
+</section>
+
+<section id="game" class="card hidden">
+  <div class="stats">
+    <div class="stat">Câu <b id="qNum">1/10</b></div>
+    <div class="stat">Điểm <b id="score">0</b></div>
+    <div class="stat">Thời gian <b><span id="time">20</span>s</b></div>
+  </div>
+  <div class="progress"><i id="bar"></i></div>
+  <div id="round" class="small"></div>
+  <div id="question" class="question"></div>
+  <div id="answers" class="answers"></div>
+  <div id="feedback" class="feedback" aria-live="polite"></div>
+  <div class="actions">
+    <button id="nextBtn" class="primary hidden">Câu tiếp theo →</button>
+  </div>
+</section>
+
+<section id="result" class="card result hidden">
+  <div class="big">🏆</div>
+  <h2 id="resultTitle"></h2>
+  <p>Bạn đạt <strong><span id="finalScore"></span>/100</strong> điểm.</p>
+  <p id="resultText" class="sub"></p>
+  <div id="review"></div>
+  <div class="actions" style="justify-content:center">
+    <button id="restartBtn" class="primary">🔄 Chơi lại</button>
+  </div>
+</section>
+</div>
+
+<script>
+const questions = [
+ {q:"Lipid là nhóm chất có đặc điểm chung nào?",a:["Tan tốt trong nước","Không tan hoặc ít tan trong nước, tan trong dung môi hữu cơ","Đều là polymer","Đều có cấu tạo từ amino acid"],c:1,e:"Lipid nhìn chung kém tan trong nước và tan tốt hơn trong nhiều dung môi hữu cơ không phân cực."},
+ {q:"Triglyceride (triacylglycerol) được tạo bởi:",a:["Glycerol và 3 acid béo","Glucose và 3 acid béo","Glycerol và 3 amino acid","Cholesterol và glycerol"],c:0,e:"Triglyceride là triester tạo từ glycerol và ba acid béo."},
+ {q:"Acid béo no có đặc điểm nào?",a:["Có ít nhất một liên kết C=C","Không có liên kết đôi C=C trong mạch carbon","Luôn có vòng benzene","Luôn tan hoàn toàn trong nước"],c:1,e:"Acid béo no không chứa liên kết đôi C=C trong mạch hydrocarbon."},
+ {q:"Acid béo không no có:",a:["Ít nhất một liên kết đôi C=C","Không có carbon","Chỉ có liên kết ba","Không có hydrogen"],c:0,e:"Acid béo không no có một hoặc nhiều liên kết đôi C=C."},
+ {q:"Phản ứng triglyceride với NaOH tạo glycerol và muối của acid béo gọi là:",a:["Ester hóa","Hydrogen hóa","Xà phòng hóa","Trùng hợp"],c:2,e:"Xà phòng hóa là phản ứng thủy phân ester trong môi trường base, tạo glycerol và muối carboxylate."},
+ {q:"Thành phần lipid quan trọng của màng tế bào là:",a:["Phospholipid","Glucose","Tinh bột","Cellulose"],c:0,e:"Phospholipid tạo nên lớp kép lipid, một cấu trúc nền của màng tế bào."},
+ {q:"Phần đầu của phospholipid thường có tính:",a:["Kỵ nước","Ưa nước","Không tương tác với nước","Luôn là hydrocarbon"],c:1,e:"Đầu phospholipid có nhóm phân cực nên ưa nước; đuôi hydrocarbon kỵ nước."},
+ {q:"Cholesterol thuộc nhóm:",a:["Steroid/sterol","Carbohydrate","Protein","Acid nucleic"],c:0,e:"Cholesterol là một sterol, thuộc nhóm steroid lipid."},
+ {q:"Trong cùng điều kiện, tăng mức độ không no của acid béo thường làm nhiệt độ nóng chảy:",a:["Tăng","Giảm","Luôn bằng 100°C","Không bao giờ thay đổi"],c:1,e:"Liên kết đôi, đặc biệt dạng cis, làm mạch khó xếp sát nhau nên thường làm giảm nhiệt độ nóng chảy."},
+ {q:"Khi xà phòng hóa một triglyceride đơn giản bằng NaOH, sản phẩm hữu cơ chính gồm:",a:["Glycerol và 3 muối natri của acid béo","Glucose và 3 acid béo","Ethanol và CO2","Cholesterol và nước"],c:0,e:"Một triglyceride có ba nhóm ester nên thủy phân base tạo glycerol và ba muối carboxylate tương ứng."}
+];
+
+let index=0,score=0,time=20,timer=null,locked=false,history=[];
+
+const $=id=>document.getElementById(id);
+function show(id){$(id).classList.remove("hidden")}
+function hide(id){$(id).classList.add("hidden")}
+
+function startGame(){
+ index=0;score=0;history=[];
+ hide("start");hide("result");show("game");
+ renderQuestion();
+}
+function renderQuestion(){
+ clearInterval(timer); locked=false; time=20;
+ $("qNum").textContent=(index+1)+"/"+questions.length;
+ $("score").textContent=score;
+ $("time").textContent=time;
+ $("bar").style.width=(index/questions.length*100)+"%";
+ $("round").textContent=index<4?"VÒNG 1 — KHỞI ĐỘNG":index<7?"VÒNG 2 — TĂNG TỐC":"VÒNG 3 — CHUNG KẾT";
+ $("question").textContent=questions[index].q;
+ $("feedback").textContent="";
+ $("nextBtn").classList.add("hidden");
+ const box=$("answers");box.innerHTML="";
+ questions[index].a.forEach((answer,i)=>{
+   const b=document.createElement("button");
+   b.className="answer";b.textContent=String.fromCharCode(65+i)+". "+answer;
+   b.addEventListener("click",()=>choose(i,b));
+   box.appendChild(b);
+ });
+ timer=setInterval(()=>{
+   time--; $("time").textContent=time;
+   if(time<=0){clearInterval(timer);choose(-1,null);}
+ },1000);
+}
+function choose(choice,button){
+ if(locked)return;
+ locked=true;clearInterval(timer);
+ const item=questions[index], correct=choice===item.c;
+ [...$("answers").children].forEach((b,i)=>{
+   b.disabled=true;
+   if(i===item.c)b.classList.add("correct");
+ });
+ if(button && !correct)button.classList.add("wrong");
+ if(correct){score+=10;$("feedback").textContent="✅ Chính xác! +10 điểm";}
+ else if(choice===-1){$("feedback").textContent="⏰ Hết giờ! "+item.e;}
+ else{$("feedback").textContent="❌ Chưa đúng. "+item.e;}
+ history.push({q:item.q,choice,correct});
+ $("score").textContent=score;
+ $("nextBtn").classList.remove("hidden");
+ $("bar").style.width=((index+1)/questions.length*100)+"%";
+}
+function next(){
+ index++;
+ if(index>=questions.length)finish(); else renderQuestion();
+}
+function finish(){
+ clearInterval(timer);hide("game");show("result");
+ $("finalScore").textContent=score;
+ let title,text;
+ if(score===100){title="👑 HUYỀN THOẠI LIPID";text="Hoàn hảo! Bạn đã chinh phục toàn bộ câu hỏi."}
+ else if(score>=80){title="🔥 NHÀ VÔ ĐỊCH LIPID";text="Kiến thức Lipid của bạn rất chắc!"}
+ else if(score>=60){title="👏 RẤT TỐT";text="Bạn đã nắm được phần lớn kiến thức cốt lõi."}
+ else if(score>=40){title="💪 KHÁ ỔN";text="Ôn thêm một chút là có thể phá kỷ lục."}
+ else{title="🧪 THỬ LẠI NÀO";text="Chơi lại để củng cố kiến thức và tăng điểm nhé."}
+ $("resultTitle").textContent=title;$("resultText").textContent=text;
+ const table=document.createElement("table");
+ table.innerHTML="<thead><tr><th>#</th><th>Câu hỏi</th><th>Kết quả</th></tr></thead>";
+ const tb=document.createElement("tbody");
+ history.forEach((h,i)=>{
+   const tr=document.createElement("tr");
+   tr.innerHTML="<td>"+(i+1)+"</td><td>"+h.q+"</td><td>"+(h.correct?"✅ Đúng":"❌ Sai")+"</td>";
+   tb.appendChild(tr);
+ });
+ table.appendChild(tb);$("review").innerHTML="";$("review").appendChild(table);
+}
+$("startBtn").addEventListener("click",startGame);
+$("nextBtn").addEventListener("click",next);
+$("restartBtn").addEventListener("click",startGame);
+</script>
+</body>
+</html>
